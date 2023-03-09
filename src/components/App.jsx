@@ -26,8 +26,11 @@ class App extends Component {
     if (findElement !== undefined) {
       const indexElement = this.state.contacts.indexOf(findElement);
       if (indexElement !== -1) {
-        this.state.contacts.splice(indexElement, 1);
-        this.setState(prevState => ({ contacts: prevState.contacts }));
+        this.setState(prevState => ({
+          contacts: prevState.contacts.filter(
+            elem => elem.id !== el.target.dataset.id
+          ),
+        }));
       }
     }
   };
@@ -58,13 +61,27 @@ class App extends Component {
       alert(data.name + ' is already in contacts.');
       return;
     }
-    this.state.contacts.push({
-      id: nanoid(),
-      name: data.name,
-      number: data.number,
-    });
-    this.setState(prevState => ({ contacts: prevState.contacts }));
+
+    const newObj = { id: nanoid(), name: data.name, number: data.number };
+
+    this.setState(prevState => ({
+      contacts: [...prevState.contacts, newObj],
+    }));
   };
+
+  componentDidMount() {
+    const contacts = localStorage.getItem('contacts');
+    const parseContacts = JSON.parse(contacts);
+    if (parseContacts) {
+      this.setState({ contacts: parseContacts });
+    }
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.contacts !== prevState.contacts) {
+      localStorage.setItem('contacts', JSON.stringify(this.state.contacts));
+    }
+  }
 
   render() {
     return (
